@@ -1,0 +1,32 @@
+import pyxnat
+from pyxnat import Interface
+central = Interface(server='https://xnat.vanderbilt.edu/xnat/')
+
+central.select.projects().get()
+
+#  loop on subject, experiment,and assessor
+project = central.select.project('ADNI_23')
+subject = project.subject('VUIISXNAT04_S16966')
+subject.experiments().get()
+exp = subject.experiments('VUIISXNAT04_E230895')
+exp.assessors().get()
+assess = exp.assessor('12fdb5ac-e27e-42b8-8d51-e9d5da00903b')
+assess.resources().get()
+ress = assess.resource('11570137')
+ress.files('*Detrend*.nii.gz').get()
+
+
+central.select('/project/ADNI_23/subjects/VUIISXNAT04_S16966/experiment/VUIISXNAT04_E230895/assessor/12fdb5ac-e27e-42b8-8d51-e9d5da00903b/resources/11570137/Detrend_4DVolume.nii.gz').get('/home/local/VANDERBILT/dolel/Documents/')
+
+
+
+# help
+
+central.inspect.datatypes()
+central.inspect.datatypes('xnat:*')
+central.inspect.datatypes('xnat:mrSessionData', '*ID')
+
+
+central.select('/projects/ADNI_23/subjects/VUIISXNAT04_S16964/experiments/VUIISXNAT04_E230873/assessors//files').get()
+
+URI="/vuiisxnat/xnat1_6/archive/ADNI_23/arc001/002_S_0685_Visit26/ASSESSORS/ADNI_23-x-002_S_0685-x-002_S_0685_Visit26-x-scz_v0-x-03ac33cf-7192-4fd1-919b-68b92f08a908/scz_OUTPUTS/scz_OUTPUTS_catalog.xml
