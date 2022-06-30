@@ -3,48 +3,47 @@ list_preproc =  dir([DATA_DIR '/*/*/rsfmri/Detrend_4DVolume.nii.gz']);
 
 nb_elt = length(list_preproc)
 
-for i=1:nb_elt
+for i=794:nb_elt
 
     subject = strsplit(list_preproc(i).name, 'Detrend');
     subject_dir = list_preproc(i).folder;
 
-    % img_Height = [list_preproc(i).folder '/Deconv_Detrend_4DVolume_Olrm_Height.nii'];
+    img_Height = [list_preproc(i).folder '/Deconv_Canonical_Detrend_4DVolume_Olrm_Height.nii'];
     
-    % if isfile(img_Height)
-    %     % disp("file exist")
-    %     img = [list_preproc(i).folder '/Detrend_4DVolume.nii.gz'];
+    if isfile(img_Height)
+        disp("file exist")
+        % img = [list_preproc(i).folder '/Detrend_4DVolume.nii.gz'];
         
-    % else
+    else
     % disp("file exist")
     i
     % gunzip(img)
 
-    img = [list_preproc(i).folder '/Detrend_4DVolume.nii'];
-    info = niftiinfo(img);
-    img_read = niftiread(info);
-    % img_unnorm = [list_preproc(i).folder '/Detrend_4DVolume_unnormalized.nii' ];
-    % niftiwrite(img_read, img_unnorm, info);
+        img = [list_preproc(i).folder '/Detrend_4DVolume.nii'];
+        info = niftiinfo(img);
+        img_read = niftiread(info);
+        % img_unnorm = [list_preproc(i).folder '/Detrend_4DVolume_unnormalized.nii' ];
+        % niftiwrite(img_read, img_unnorm, info);
 
-    % img_tmp = (img_read - mean(img_read, [1,2,3]));
-    % tmp = img_tmp./std(img_read, 0, [1,2,3]);
-    % niftiwrite(tmp, img, info);
+        % img_tmp = (img_read - mean(img_read, [1,2,3]));
+        % tmp = img_tmp./std(img_read, 0, [1,2,3]);
+        % niftiwrite(tmp, img, info);
 
 
-    % TR value
-    dirs = string(strsplit(list_preproc(i).folder, '/'));
-    folder = strjoin(dirs(1:end-1),'/');
-    fname = dir(strjoin([folder 'func/*.json'], '/'));
-    name =  [fname.folder '/' fname.name];
-    fid = fopen(string(name));
-    raw = fread(fid); 
-    str = char(raw'); 
-    fclose(fid); 
-    val = jsondecode(str);
-    val.RepetitionTime
+        % TR value
+        dirs = string(strsplit(list_preproc(i).folder, '/'));
+        folder = strjoin(dirs(1:end-1),'/');
+        fname = dir(strjoin([folder 'func/*.json'], '/'));
+        name =  [fname.folder '/' fname.name];
+        fid = fopen(string(name));
+        raw = fread(fid); 
+        str = char(raw'); 
+        fclose(fid); 
+        val = jsondecode(str);
+        val.RepetitionTime
 
-    % to save time
-    if val.RepetitionTime < 2
-        
+        % to save time
+            
         matlabbatch{1}.spm.tools.rsHRF.vox_rsHRF.images = {img};
         matlabbatch{1}.spm.tools.rsHRF.vox_rsHRF.Denoising.generic{1}.multi_reg = {};
         matlabbatch{1}.spm.tools.rsHRF.vox_rsHRF.Denoising.BPF{1}.bands = [0.01 0.1];
@@ -74,5 +73,7 @@ for i=1:nb_elt
         hrfa = reshape(hrfa, hrfa_size);
         
         niftiwrite(hrfa, [subject_dir '/Deconv_Canonical_Detrend_4DVolume_hrf.nii']);
+    
+        % end
     end
 end

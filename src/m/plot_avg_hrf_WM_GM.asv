@@ -81,9 +81,9 @@ str = [ img_11_gm ' ' img_53_gm ];
 files_cell = split(str);
 color = [ [0 0.4470 0.7410], [0.6350 0.0780 0.1840], 'r', 'b' ];
 
-gm = zeros([2, 54]);
-wm = zeros([2, 54]); 
-x =  zeros([2, 54]);
+gm = zeros([2, 53]);
+wm = zeros([2, 53]); 
+x =  zeros([2, 53]);
 
 for i=1:length(files_cell)
 
@@ -95,7 +95,7 @@ for i=1:length(files_cell)
 
 
     x_tmp = 1:sz(4);
-    x(i,2:sz(4)+1) = x_tmp.* TR(i);
+    x(i,1:sz(4)) = x_tmp.* TR(i);
 
     gm_mat = zeros([sizemat, sz(4)]);
     wm_mat = zeros([sizemat, sz(4)]);
@@ -114,16 +114,15 @@ for i=1:length(files_cell)
         wm(i,j) = mean_wm;
  
     end
-%     hold on;
-%     plot(x, gm, color(j)); plot(x, wm, color(j+1));
-%     legend('GM TR=3s', 'WM TR=3s', 'GM TR=0.607s', 'WM TR=0.607s') 
-%     xlabel('time (s)')
-%     axis([x(1), x(end), -0.5, 2.1])
-%     j = j+2
+    hold on;
+    plot(x, gm, color(j)); plot(x, wm, color(j+1));
+    legend('GM', 'WM') 
+    xlabel('time (s)')
+    axis([x(1), x(end), -0.5, 2.1])
+    j = j+2
 end
 
-plot(x(1,1:11), gm(1,1:11), x(1,1:11), wm(1,1:11)) 
-plot(x(2,:), gm(2,:), 'b',  x(2,:), wm(2,:), 'r'); 
+
 
 img_11_gm = load_nii('Documents/rsHRF_project/hrf_test/HRF_11') [0 0.4470 0.7410]
 img_11_wm = load_nii('Documents/rsHRF_project/hrf_test/HRF_11') [0.6350 0.0780 0.1840]
