@@ -11,8 +11,8 @@ def remove_outlier(df, index):
 
     IQR = Q3 - Q1
 
-    filter = (df[index] >= Q1 - IQR) &  (df[index] <= Q3 + IQR)
-    outlier =  (df[index] <= Q1 - IQR) |  (df[index] >= Q3 + IQR)
+    filter = (df[index] >= Q1 - 2*IQR) &  (df[index] <= Q3 + 2*IQR)
+    outlier =  (df[index] <= Q1 - 2*IQR) |  (df[index] >= Q3 + 2*IQR)
 
     return df.loc[filter], df.loc[outlier]
 
