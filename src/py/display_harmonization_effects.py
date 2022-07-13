@@ -22,7 +22,9 @@ def main(args):
         if ext == '.csv':
 
             df = pd.read_csv(csvfile)
-            df = df.rename(columns={"Modele": "Model"})
+
+            df, _ = remove_outlier(df, args.cols[0])
+            # df = df.rename(columns={"Modele": "Model"})
 
             xmin = int(np.min(df['Age'])) -1
             xmax = round(np.max(df['Age'])) +1
@@ -34,30 +36,33 @@ def main(args):
 
 
             ax = plt.subplot(n_rows,n_cols,j+1)
+
+            df = df.loc[ (df['TR'] ==0.607) | (df['TR'] ==3.0) ]
+            # print(df)
             plot_hue = hue_regplot(data=df, x='Age', y=args.cols[0], hue=args.effects[0])
-            plt.title("{} in {} before ComBAT - {} effect ".format(param, args.cols[0], args.effects[0]))
+            plt.title("{} in {} before ComBAT - {} color ".format(param, args.cols[0], args.effects[0]))
             # plt.axis(axis)
 
             plt.subplot(n_rows,n_cols,j+2)
             plot_hue = hue_regplot(data=df, x='Age', y=args.cols[1], hue=args.effects[0], legend=True)
-            plt.title("{} in {} after ComBAT - {} effect".format(param, args.cols[0], args.effects[0]))
+            plt.title("{} in {} after ComBAT - {} color".format(param, args.cols[0], args.effects[0]))
             plt.legend()
             # plt.axis(axis)
 
             ax = plt.subplot(n_rows,n_cols,j+3)
             plot_hue = hue_regplot(data=df, x='Age', y=args.cols[0], hue=args.effects[1])
-            plt.title("{} in {} before ComBAT - {} effect".format(param, args.cols[0], args.effects[1]))
+            plt.title("{} in {} before ComBAT - Scanner color".format(param, args.cols[0], args.effects[1]))
             # plt.axis(axis)
 
             ax = plt.subplot(n_rows,n_cols,j+4)
             plot_hue = hue_regplot(data=df, x='Age', y=args.cols[1], hue=args.effects[1], legend=True)
-            plt.title("{} in {} after ComBAT  - {} effect".format(param, args.cols[0], args.effects[1]))
+            plt.title("{} in {} after ComBAT  - Scanner color".format(param, args.cols[0], args.effects[1]))
             plt.legend(bbox_to_anchor=(1.02, 0.5), loc="center left")
             # plt.axis(axis)
 
             j+=4
 
-    suptitle = 'HRF changes in' + args.cols[0] + 'across aging'
+    suptitle = 'Results of harmonization in ' + args.cols[0] + ' across aging - left is TR color - right is scanner color'
     plt.suptitle(suptitle)
     plt.savefig(args.out_png)
 
