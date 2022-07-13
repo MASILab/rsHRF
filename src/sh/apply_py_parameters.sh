@@ -16,6 +16,7 @@ echo "--py_file             python script to apply on each feature"
 
 ## works for ComBAT.py, age_csv.py
 params="Height DipHeight TroughHeight PeakIntegral DipIntegral TroughIntegral Time2peak Time2dip Time2trough FWHM"
+
 while [ "$1" != "" ]; do
     case $1 in
         --in_dir )  shift
@@ -33,14 +34,16 @@ done
 
 ## input parameters to .sh
 age_subject='../../../rsHRF_project/list_params_subject_experiment_v3.csv' 
-TR_subject='../../../rsHRF_project/txt/list_TR_scans.csv'
-scanner='../../../rsHRF_project/txt/experiments_scanners_associated.csv'
+# TR_subject='../../../rsHRF_project/txt/list_TR_scans.csv'
+scanner='../../../rsHRF_project/txt/infos_site_subjects.csv'
 
+echo $in_dir
+input_dir=../../../rsHRF_project/output/WM_GM_analysis/csv_cleaned/
+output_dir=../../../rsHRF_project/output/WM_GM_analysis/csv_harmonized/Model_and_TR/
 # Iterate the string variable using for loop
 for val in $params; do
-    in_file=$input_dir$val'.csv'
-    out_csv=$output_dir$val'.csv'
-    # echo $py_file --in_csv $in_file --out_csv $out_csv ## comBAT
-    echo $py_file --csv_to_age $in_file --outfile $out_csv --csv_age_subject $age_subject --csv_TR_subject $TR_subject --csv_scanner $scanner ## age_csv
+    in_file=$input_dir$val'_canonical_regcleaned.csv'
+    out_csv=$output_dir$val'_canonical.csv'
+    python3 $py_file --in_csv $in_file --out_csv $out_csv ## comBAT
+    # python3 $py_file --csv_to_age $in_file --outfile $out_csv --csv_age_subject $age_subject --csv_site $scanner
 done
-
