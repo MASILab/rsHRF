@@ -15,6 +15,9 @@ def main(args):
     list_exp = []
     list_TR = []
 
+    list_f = []
+    list_sites = []
+
     for subject in os.listdir(input_dir):
         subject_dir = os.path.join(input_dir, subject)
         for experiment in os.listdir(subject_dir):
@@ -35,6 +38,16 @@ def main(args):
                             list_TR.append(data["RepetitionTime"])
                             
                             try:
+                                list_sites.append(data["InstitutionName"]) 
+                            except:
+                                list_sites.append('NaN') 
+
+                            try:
+                                list_f.append(data["ImagingFrequency"])
+                            except:
+                                list_f.append('NaN') 
+
+                            try:
                                 list_manufacturer.append(data["Manufacturer"]) 
                             except:
                                 list_manufacturer.append('NaN') 
@@ -50,11 +63,14 @@ def main(args):
                 except:
                     print('Fail to read json file for subject {}'.format(subject))
 
-    df = pd.DataFrame(data={'subject':list_subjects,
+    df = pd.DataFrame(data={'Subject':list_subjects,
                             'TR':list_TR,
-                            'experiment':list_exp,
-                            'Model': list_model ,
-                            'Manufacturer': list_manufacturer })
+                            'Experiment':list_exp,
+                            'Scanner': list_model,
+                            'Manufacturer': list_manufacturer,
+                            'Frequence': list_f,
+                            'Site': list_sites
+                            })
 
     df.to_csv(output_file, index=False)
 
