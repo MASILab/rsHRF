@@ -10,8 +10,9 @@ def main(args):
 
   # height= os.path.join(in_dir, 'func2structHeight.nii.gz')  
   
-  params = ['Time2trough', 'TroughHeight', 'TroughIntegral', 'PeakIntegral_v2', 'DipIntegral_v2']  
-  
+  # params = ['Time2trough', 'TroughHeight', 'TroughIntegral', 'PeakIntegral_v2', 'DipIntegral_v2']  
+  params= ["Olrm_Height", "DipHeight", "TroughHeight", "PeakIntegral", "DipIntegral", "TroughIntegral", "Olrm_Time2peak", "Time2dip", "Time2trough", "Olrm_FWHM"]
+
   stand = ants.image_read(args.atlas)
   struct = ants.image_read(args.T1)
   # func = ants.image_read(height)
@@ -43,7 +44,7 @@ def main(args):
   prefix = 'func2struct_'
   
   for param in params:
-    name = param + '/' + prefix + param + '.nii.gz'
+    name = prefix + param + '.nii.gz'
     file= os.path.join(in_dir, name)
     func = ants.image_read(file)
     warpimage = ants.apply_transforms(fixed=stand, moving=func, transformlist=func2stand)
