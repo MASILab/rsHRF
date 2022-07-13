@@ -6,40 +6,35 @@ import pandas as pd
 def main(args):
 
   df_age = pd.read_csv(args.csv_age_subject)
-  df_TR = pd.read_csv(args.csv_TR_subject)
   df=pd.read_csv(args.csv_to_age)
-  df_scan = pd.read_csv(args.csv_scanner)
+  df_site = pd.read_csv(args.csv_site)
 
   for index, row in df.iterrows():
-    df_tr = df_TR.copy()
     dfage = df_age.copy()
-    dfscan = df_scan.copy()
+    dfsite = df_site.copy()
 
     experiment = row['Experiment']
     
     dfage = dfage.loc[ dfage['experiment'] == experiment]
-    df_tr = df_tr.loc[ df_tr['experiment'] == experiment]
-    dfscan = dfscan.loc[ dfscan['experiment'] == experiment]
+    dfsite = dfsite.loc[ dfsite['Experiment'] == experiment]
 
-    manu = dfscan['Manufacturer'].to_numpy()
-    model = dfscan['Model'].to_numpy()
-    if manu:
-
-      df.at[index, 'Manufacturer'] = manu[0]
-      df.at[index, 'Modele'] = model[0]
-
-    TR = df_tr['TR'].to_numpy()
+    manu = dfsite['Manufacturer'].to_numpy()
+    model = dfsite['Scanner'].to_numpy()
+    freq = dfsite['Frequence'].to_numpy()
+    site = dfsite['Site'].to_numpy()
+    tr = dfsite['TR'].to_numpy()
+    
+    df.at[index, 'Manufacturer'] = manu[0]
+    df.at[index, 'Scanner'] = model[0]
+    df.at[index, 'Frequence'] = freq[0]
+    df.at[index, 'Site'] = site[0]
+    df.at[index, 'TR'] = tr[0]
 
     age = dfage['age'].to_numpy()
     study = dfage['Study'].to_numpy()
     weight = dfage['Weight'].to_numpy()
     sex = dfage['Sex'].to_numpy()
     disease = dfage['ResearchGroup'].to_numpy()
-
-    if TR:
-      df.at[index, 'TR'] = TR[0]
-    else:
-      print('TR ', experiment)
 
     if age: 
       df.at[index, 'Age'] = age[0]
@@ -58,8 +53,7 @@ if __name__ == '__main__':
 
   parser.add_argument('--csv_age_subject', type=str)
   parser.add_argument('--csv_to_age', type=str)
-  parser.add_argument('--csv_TR_subject', type=str)
-  parser.add_argument('--csv_scanner', type=str)
+  parser.add_argument('--csv_site', type=str)
 
   parser.add_argument('--outfile', type=str)
 
