@@ -1,4 +1,5 @@
 import argparse
+from curses.panel import bottom_panel
 import pandas as pd 
 import numpy as np
 import matplotlib.pyplot as plt 
@@ -10,18 +11,18 @@ import seaborn as sns
 from utils import cohens_d, clean_dataframe
 
 
-def set_axis(fig, ax, params, y_axis_name, test, name):
+def set_axis(fig, ax, params, y_axis_name, test, name, font=30):
     nb_features = len(params)
     nb_manu = len(y_axis_name)
 
-    fig.subplots_adjust(hspace=1)
+    # fig.autolayout()
 
-    ax.set_xticks(np.arange(nb_features)+0.5, params, rotation=45, fontsize=20)
-    ax.set_yticks(np.arange(nb_manu)+0.5, y_axis_name, rotation=0, fontsize=20)
+    ax.set_xticks(np.arange(nb_features)+0.5, params, rotation=45, fontsize=font)
+    ax.set_yticks(np.arange(nb_manu)+0.5, y_axis_name, rotation=0, fontsize=font)
 
-    ax.set_title("{} score for each feature in {:}".format(test,name), fontsize=25,pad=30)
-    ax.set_xlabel("HRF feature",labelpad=30, fontsize=20)
-    ax.set_ylabel("scanner effect studied",labelpad=30, fontsize=20)
+    ax.set_title("{} score for each feature in {:}".format(test,name), fontsize=font+5,pad=30)
+    ax.set_xlabel("HRF feature",labelpad=30, fontsize=font)
+    ax.set_ylabel("scanner effect studied",labelpad=30, fontsize=font)
 
     return fig
 
@@ -54,30 +55,30 @@ def main(args):
 
     bool_pval = False
 
-    fig1, ax1 = plt.subplots(nrows=2, ncols=1, figsize=(20,15))
-    fig2, ax2 = plt.subplots(nrows=2, ncols=1, figsize=(20,15))
+    fig1, ax1 = plt.subplots(nrows=1, ncols=2, figsize=(3*30,3*5))
+    fig2, ax2 = plt.subplots(nrows=1, ncols=2, figsize=(3*30,3*5))
 
     for k in range(2):
         tissu = tissus[k]
         for i in range(nb_features):
             feature = params[i]
-            file = args.in_dir + feature + '_canonical.csv'
+            file = args.in_dir + feature + '.csv'
             df = pd.read_csv(file)
 
             df = df.loc[(df['Age'] >=65) & (df['Age'] <=90)]
             df['Age'] = pd.cut(df.Age,bins=[65, 70, 75, 80, 85, 90],labels=labels_age)    
             
 
-            df_2 = df.loc[ df['TR'] == 3]
-            df_2.insert(5, "Mean_Brain",df_2[["GM", "WM"]].mean(axis=1), True)
-            df_2, _ = clean_dataframe(df_2, 'Mean_Brain')
+            # df_2 = df.loc[ df['TR'] == 3]
+            # df_2.insert(5, "Mean_Brain",df_2[["GM", "WM"]].mean(axis=1), True)
+            # df_2, _ = clean_dataframe(df_2, 'Mean_Brain')
 
 
-            df_1 = df.loc[ df['TR'] == 0.607]
-            df_1.insert(5, "Mean_Brain",df_1[["GM", "WM"]].mean(axis=1), True)
-            # df_1["Mean_Brain"] = 
-            df_1, _ = clean_dataframe(df_1, 'Mean_Brain')
-            df = pd.concat([df_2, df_1])
+            # df_1 = df.loc[ df['TR'] == 0.607]
+            # df_1.insert(5, "Mean_Brain",df_1[["GM", "WM"]].mean(axis=1), True)
+            # # df_1["Mean_Brain"] = 
+            # df_1, _ = clean_dataframe(df_1, 'Mean_Brain')
+            # df = pd.concat([df_2, df_1])
 
 
             for j in range(nb_manu):
@@ -117,21 +118,25 @@ def main(args):
 
         y_axis_name = y_axis_name[0:nb_manu]
         
-        sns.heatmap(mat_d, cmap = cmap, vmax=max_x, vmin=min_x, annot=True, annot_kws={"fontsize":15}, ax=ax1[k])
-        fig1 = set_axis(fig1, ax1[k], params, y_axis_name, args.type, name[k])
+        ax = sns.heatmap(mat_d, cmap = cmap, vmax=max_x, vmin=min_x, annot=True, annot_kws={"fontsize":40}, ax=ax1[k])
+        fig1 = set_axis(fig1, ax1[k], params, y_axis_name, args.type, name[k], font=40)
+        cbar = ax.collections[0].colorbar
+        cbar.ax.tick_params(labelsize=40)
+
 
         if bool_pval == True:
-            sns.heatmap(mat_d_p, cmap = cmap, vmax=1, vmin=0, annot=True, annot_kws={"fontsize":15}, ax=ax2[k])
-            fig2 = set_axis(fig2, ax2[k], params, y_axis_name, 'pval of {}'.format(args.type), name[k])
-    
-    outfile = args.out + "ComBAT_performance_{}_test_{}_effect_canonical_data.png".format(args.type, args.effect)
-    fig1.savefig(outfile)
+            ax = sns.heatmap(mat_d_p, cmap = cmap, vmax=1, vmin=0, annot=True, annot_kws={"fontsize":40}, ax=ax2[k])
+            fig2 = set_axis(fig2, ax2[k], params, y_axis_name, 'pval of {}'.format(args.type), name[k], font=40)
+            cbar = ax.collections[0].colorbar
+            cbar.ax.tick_params(labelsize=40)
+
+    outfile = args.out + "ComBAT_performance_{}_test_{}_effect.png".format(args.type, args.effect)
+    fig1.savefig(outfile, bbox_inches="tight")
 
 
     if bool_pval == True:
-        outfile2 = args.out + "ComBAT_performance_{}_pval_{}_effect_canonical_data.png".format(args.type, args.effect)
-        fig2.savefig(outfile2)
-    
+        outfile2 = args.out + "ComBAT_performance_{}_pval_{}_effect.png".format(args.type, args.effect)
+        fig2.savefig(outfile2, bbox_inches="tight")
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser(description='Compute a metric for all HRF features and save is a png')
