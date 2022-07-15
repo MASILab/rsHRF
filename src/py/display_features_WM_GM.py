@@ -9,11 +9,13 @@ from scipy import stats
 from utils import *
 
 def main(args):
-    sns.set_theme(context="talk")
+    sns.set_theme(context="poster")
     pal = sns.color_palette()
     j = 1
 
-    plt.figure(figsize=(20,50))
+    font = 30
+
+    plt.figure(figsize=(40,100))
     in_dir  = args.in_dir
 
     wmcol = 'WM'
@@ -31,7 +33,7 @@ def main(args):
         if ext == '.csv':
 
             df = pd.read_csv(csvfile)
-            df = df.rename(columns={"Modele": "Model"})
+            # df = df.rename(columns={"Modele": "Model"})
             # df = df.loc[ df.TR == 3 ]
             
             df["Mean_Brain"] = df[[gmcol, wmcol]].mean(axis=1)
@@ -47,13 +49,16 @@ def main(args):
             legend_wm = "White Matter: corr = {:.3f}, p = {:.1e} ".format(r_wm, p_wm)
 
 
-            sns.regplot(x='Age', y=gmcol, data=df,  scatter_kws={'alpha':0.7}, label=legend_gm)
-            sns.regplot(x='Age', y=wmcol, data=df,  scatter_kws={'alpha':0.7}, label=legend_wm)
+            ax=sns.regplot(x='Age', y=gmcol, data=df,  scatter_kws={'alpha':0.7}, label=legend_gm)
+            # plt.setp(ax.get_legend().get_title(), fontsize=font) # for legend title
+            
+            ax=sns.regplot(x='Age', y=wmcol, data=df,  scatter_kws={'alpha':0.7}, label=legend_wm)
+            # plt.setp(ax.get_legend().get_title(), fontsize=font) # for legend title
 
-            plt.legend()
-            plt.xlabel('Age')
-            plt.ylabel(param)
-            plt.title('changes in {} with aging'.format(param))
+            plt.legend(prop={'size': 6})
+            plt.xlabel('Age', fontdict={'fontsize':font})
+            plt.ylabel(param, fontdict={'fontsize':font})
+            # plt.title('changes in {} with aging'.format(param))
 
 
     suptitle = 'HRF changes in WM/GM across aging'

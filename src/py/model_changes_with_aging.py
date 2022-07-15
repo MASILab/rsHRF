@@ -68,7 +68,7 @@ def main(args):
     covariates = args.covariates
     knot = args.knot
     n_boot = args.iter_boot
-    
+    group_name = ['CN', 'AD']
     ## to compute from number of params
     nrows, ncols = [50, 20]
 
@@ -80,22 +80,29 @@ def main(args):
 
         ## conditions on data for analysis 
         df = df.loc[ (df['Age'] >= 65) & (df['Age'] <= 90) ]
-        df = df.loc[df.ResearchGroup =='CN']
-        # df = df.loc[df.TR ==3.0]
+        df = df.loc[df.TR ==3.0]
 
         plt.subplot(2,5,i+1)
         idx_color = 0
-        for name in tissus_name:
-            colname = name + '_Harmonization_TR_and_Scanner'
+        colname = 'WM_Harmonization_TR_and_Scanner'
+        for name in group_name:
 
-
-            df, _ = remove_outlier(df, colname)
-            df = df.sort_values('Age')
+            if name == 'AD':
+                df_tmp = df.loc[ (df.ResearchGroup =='AD') | (df.ResearchGroup =='LMCI')]
+                df_tmp, _ = remove_outlier(df_tmp, colname)
+                name = 'LMCI and AD'
             
-            n_sample_age = int(len(df)*args.n_sample)
+            else:
+                df_tmp = df.loc[df.ResearchGroup ==name]
+                df_tmp, _ = remove_outlier(df_tmp, colname)
 
-            m_cub, _, result_test  = model(df, 'Age', colname, covariates, knot)
-            bs_replicates, out_x  = bootstrap(df,m_cub, covariates, knot, n_boot, n_sample_age)
+            print(len(df_tmp))
+            df_tmp = df_tmp.sort_values('Age')
+            
+            n_sample_age = int(len(df_tmp)*args.n_sample)
+
+            m_cub, _, result_test  = model(df_tmp, 'Age', colname, covariates, knot)
+            bs_replicates, out_x  = bootstrap(df_tmp,m_cub, covariates, knot, n_boot, n_sample_age)
             size_bs= np.shape(bs_replicates)
 
             ## confidence intervals procedure
@@ -110,7 +117,7 @@ def main(args):
                 c_mean[k] = np.mean(bs_replicates[:, k])
                 axis_x[k] = np.mean(out_x[:, k])
 
-            sns.scatterplot(x='Age', y=colname, data=df, color=pal[idx_color], alpha=0.4)
+            sns.scatterplot(x='Age', y=colname, data=df_tmp, color=pal[idx_color], alpha=0.4)
             
             ## regression line                
             sns.lineplot(x=axis_x, y=c_mean, label="{} : {}".format(name, result_test), color = pal[idx_color])
@@ -141,7 +148,7 @@ if __name__ == '__main__':
     ## param limear model
     regression = parser.add_argument_group('regression model arguments')
     regression.add_argument('--knot', type=int, help='knot value of spline', default=77)
-    regression.add_argument('--iter_boot', type=int, help='number of iterations for the bootstrapping procedure', default=500)
+    regression.add_argument('--iter_boot', type=int, help='number of iterations for the bootstrapping procedure', default=200)
     regression.add_argument('--n_sample', type=int, help='percentage of the data to use in the bootstrapping procedure', default=0.5)
 
     ## output

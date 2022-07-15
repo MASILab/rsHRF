@@ -11,8 +11,8 @@ def remove_outlier(df, index):
 
     IQR = Q3 - Q1
 
-    filter = (df[index] >= Q1 - 2*IQR) &  (df[index] <= Q3 + 2*IQR)
-    outlier =  (df[index] <= Q1 - 2*IQR) |  (df[index] >= Q3 + 2*IQR)
+    filter = (df[index] >= Q1 - 1.5*IQR) &  (df[index] <= Q3 + 1.5*IQR)
+    outlier =  (df[index] <= Q1 - 1.5*IQR) |  (df[index] >= Q3 + 1.5*IQR)
 
     return df.loc[filter], df.loc[outlier]
 
@@ -40,13 +40,13 @@ def hue_regplot(data, x, y, hue, palette=None, legend=False, **kwargs):
     i = 0
     if legend:
         for key in levels:
-            regplots.append(sns.regplot(x=x, y=y, data=data[data[hue] == key], color=pal[i], label= key))
+            regplots.append(sns.regplot(x=x, y=y, data=data[data[hue] == key], color=pal[i], label= key, scatter_kws={'s':300}))
             i +=1
             # plt.legend(bbox_to_anchor=(1.02, 0.5), loc="center left")
 
     else:
         for key in levels:
-            regplots.append(sns.regplot(x=x, y=y, data=data[data[hue] == key], color=pal[i]))
+            regplots.append(sns.regplot(x=x, y=y, data=data[data[hue] == key], color=pal[i],scatter_kws={'s':300}))
             i +=1
 
     return regplots
