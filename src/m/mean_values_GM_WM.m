@@ -1,12 +1,6 @@
 INPUT_DIR='../../../rsHRF_project/ADNI_23';
 param = 'Time2peak';
-% list_dir= dir([INPUT_DIR '/*/*/func2stand/func2stand_' param '.nii.gz']);
-list_dir= dir([INPUT_DIR '/*/*/rsfmri/Deconv_Detrend_4DVolume_' param '.nii']);
-
-%% Roi analysis on GM/WM
-
-% mask_gm =load_nii('/home/local/VANDERBILT/dolel/Documents/rsHRF_project/atlases/mni-icbm152-nlin-asym-gm-mask.nii');
-% mask_wm =load_nii('/home/local/VANDERBILT/dolel/Documents/rsHRF_project/atlases/mni-icbm152-nlin-asym-wm-mask.nii');
+list_dir= dir([INPUT_DIR '/*/*/func2stand/func2stand_' param '.nii.gz']);
 
 mask_gm =load_nii('/home/local/VANDERBILT/dolel/Documents/rsHRF_project/atlases/gm.nii');
 mask_wm =load_nii('/home/local/VANDERBILT/dolel/Documents/rsHRF_project/atlases/wm.nii');
@@ -32,11 +26,6 @@ for j=1:length(list_dir)
     mean_value = [mean_gm, mean_wm];
     y(j,:) = mean_value;
 end
-
-
-
-
-
 
 
 mat_out = [];
