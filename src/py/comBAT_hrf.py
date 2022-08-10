@@ -25,10 +25,11 @@ def applyComBAT(df, list_tissus,  list_params_studied, list_effects ,exp_name):
     covars = pd.DataFrame()
     for k in keys:
         for tr in np.unique(df['TR'].to_numpy()):
-            model.loc[ (model['Scanner'] == k) & (model['TR']==tr), 'Scanner'] = i
+            # model.loc[ (model['Scanner'] == k), 'Scanner'] = i
+            model.loc[ (model['Scanner'] == k) & (model['TR']==tr), 'Scanner'] = i         
             i +=1
         
-    covars['TR_and_Scanner'] = model['Scanner']
+    covars['Scanner'] = model['Scanner']
     print(np.unique(covars))
 
     categorical_cols = []
@@ -47,9 +48,10 @@ def applyComBAT(df, list_tissus,  list_params_studied, list_effects ,exp_name):
             covars[param] = df[param].to_numpy() 
 
     # # # Harmonization step:
+    print(covars)
     data_combat = neuroCombat(dat=data,
         covars=covars,
-        batch_col='TR_and_Scanner',
+        batch_col='Scanner',
         categorical_cols=categorical_cols)["data"]
 
     df_out = df.copy()
@@ -67,7 +69,14 @@ def main(args):
 
     df = pd.read_csv(args.in_csv)
     df = df.dropna(subset=['Age'])
-    print(len(df))
+
+    if args.rois :
+        indexes = df.columns.to_numpy()
+        i=args.rois[1]
+        list_rois = indexes[i:i+args.rois[0]]
+    
+    if args.gm_wm:
+        list_rois = args.gm_wm
 
     ## select scanner list
     if 'Scanner' in args.effects:   
@@ -82,27 +91,28 @@ def main(args):
         print(TR_to_keep)
 
     ## clean dataframe from TR and scanners used less than 19 and 26 times
-    # df_clean = pd.DataFrame()
-    # if 'TR' in args.effects:
-        # for tr_i in TR_to_keep:
+    df_clean = pd.DataFrame()
+    if 'TR' in args.effects:
+        df = df.loc[ df['TR'].isin(TR_to_keep)]
+        for tr_i in TR_to_keep:
 
-        #     df_1 = df.loc[ df['TR'] == tr_i]
-        #     df_1.insert(5, "Mean_Brain",df_1[["GM", "WM"]].mean(axis=1), True)
-        #     # df_1["Mean_Brain"] = 
-        #     df_1, _ = clean_dataframe(df_1, 'Mean_Brain')
-        #     df_clean = pd.concat([df_clean, df_1])
-    df_clean = df.loc[ df['TR'].isin(TR_to_keep)]
-    df_clean['Scanner'].value_counts()
+            df_1 = df.loc[ df['TR'] == tr_i]
+            df_1.insert(5, "Mean_Brain",df_1[list_rois].mean(axis=1), True)
 
+            df_1, _ = clean_dataframe(df_1, 'Mean_Brain')
+            df_1 = df_1.drop(columns=['Mean_Brain'])
+            df_clean = pd.concat([df_clean, df_1])
 
-    # if 'Scanner' in args.effects:        
-    df_clean = df_clean.loc[ df_clean['Scanner'].isin(scans_to_keep)]
+    # df_.drop(columns=['Mean_Brain'])
 
-    column_name = 'Harmonization_' + "_and_".join(args.effects)
-    print(column_name)
-    df_out = applyComBAT(df_clean, args.params_to_harmonize, args.add_covariates, args.effects, column_name)
+    if 'Scanner' in args.effects:        
+        df_clean = df_clean.loc[ df_clean['Scanner'].isin(scans_to_keep)]
 
-    # print(len(df_out))
+    column_name = 'harmonized'
+    df_out = applyComBAT(df_clean, list_rois, args.add_covariates, args.effects, column_name)
+
+    list_rois_harmonized = [s + '_harmonized' for s in list_rois]
+    df_out['Mean_brain_harmonized'] = df_out[ list_rois_harmonized ].mean(axis=1)
 
     df_out.to_csv(args.out_csv, index=False)
 
@@ -114,11 +124,15 @@ if __name__ == '__main__':
     input = parser.add_argument_group('input arguments')
     input.add_argument('--in_csv', type=str, help='input csv file containing the data to harmonize', required=True)
     input.add_argument('--TR_thd', type=int, help='threshold value to select TR for ComBAT', default=100)
-    input.add_argument('--model_thd', type=int, help='threshold value to select Scanner for ComBAT', default=26)
+    input.add_argument('--model_thd', type=int, help='threshold value to select Scanner for ComBAT', default=46)
+
+    ## analysis type
+    group = parser.add_mutually_exclusive_group(required=True)
+    group.add_argument('--gm_wm', type=str,  nargs='+', help='columns name in in_csv to harmonize')
+    group.add_argument('--rois', type=int,  nargs='+', help='rois to harmonize, specify number of roi and first column index')
 
     ## param comBAT
     combat = parser.add_argument_group('ComBAT arguments')
-    combat.add_argument('--params_to_harmonize', type=str,  nargs='+', help='columns name in in_csv to harmonize', default=["WM", "GM"])
     combat.add_argument('--add_covariates', type=str, nargs='+', help='columns name in in_csv to use as covariates in ComBAT', default=[])
     combat.add_argument('--effects', type=str,nargs='+', help='effect to study, i.e. scanner effects. name should be in in_csv', default=["TR", "Scanner"])
 
