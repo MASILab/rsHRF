@@ -24,7 +24,7 @@ def main(args):
         model = dfage['Scanner'].to_numpy()
         df.at[index, 'Scanner'] = model[0]
         
-        tr = dfage['Age'].to_numpy()
+        tr = dfage['TR'].to_numpy()
         df.at[index, 'TR'] = tr[0]
 
         age = dfage['Age'].to_numpy()
