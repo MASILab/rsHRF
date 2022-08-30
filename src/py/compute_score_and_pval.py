@@ -38,8 +38,8 @@ def main(args):
 
     params = ['Height', 'DipHeight', 'TroughHeight', 'PeakIntegral', 'DipIntegral','TroughIntegral', 'Time2peak', 'Time2dip', 'Time2trough',  'FWHM']
     col = args.effect
-    tissus = ['WM', 'WM_Harmonization_TR_and_Scanner']
-    name =  ['WM before harmonization', 'WM after harmonization of TR and scanners']
+    tissus = args.tissus
+    name =  ['before harmonization', 'after harmonization of TR and scanners']
     
 
     ## compute combination
@@ -143,13 +143,14 @@ def main(args):
         fig2.savefig(outfile2, bbox_inches="tight", dpi=600)
 
 if __name__ == '__main__':
-    parser = argparse.ArgumentParser(description='Compute a metric for all HRF features and save is a png')
+    parser = argparse.ArgumentParser(description='Compute a metric for all HRF features before/after ComBAT and save is a png')
     
     ## input
     input = parser.add_argument_group('input arguments')
     input.add_argument('--in_dir', type=str, help='input csv file containing the data harmonized', required=True)
-    input.add_argument('--type', type=str, help='metric to compute i.e. cohen, kurskal or anova',required=True) 
+    input.add_argument('--type', type=str, help='metric to compute i.e. cohen, kurskal',required=True) 
     input.add_argument('--effect', type=str, help='effect to study i.e. Age, Manufacturer',required=True)
+    input.add_argument('--tissus', type=str,   nargs='+', help='columns name in in_csv to study', default=["WM", "WM_Harmonization_TR_and_Scanner"])
 
     ## output
     parser.add_argument('--out', type=str, help='output dir to save the img', default='./')
