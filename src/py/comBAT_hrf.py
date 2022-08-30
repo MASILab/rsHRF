@@ -30,7 +30,6 @@ def applyComBAT(df, list_tissus,  list_params_studied, list_effects ,exp_name):
             i +=1
         
     covars['Scanner'] = model['Scanner']
-    print(np.unique(covars))
 
     categorical_cols = []
     ## other covariates
@@ -48,7 +47,6 @@ def applyComBAT(df, list_tissus,  list_params_studied, list_effects ,exp_name):
             covars[param] = df[param].to_numpy() 
 
     # # # Harmonization step:
-    print(covars)
     data_combat = neuroCombat(dat=data,
         covars=covars,
         batch_col='Scanner',
@@ -78,6 +76,8 @@ def main(args):
     if args.gm_wm:
         list_rois = args.gm_wm
 
+
+    print(list_rois)
     ## select scanner list
     if 'Scanner' in args.effects:   
         df_models_count = pd.DataFrame(df['Scanner'].value_counts())
@@ -112,6 +112,8 @@ def main(args):
     df_out = applyComBAT(df_clean, list_rois, args.add_covariates, args.effects, column_name)
 
     list_rois_harmonized = [s + '_harmonized' for s in list_rois]
+
+    df_out['Mean_brain'] = df_out[ list_rois ].mean(axis=1)
     df_out['Mean_brain_harmonized'] = df_out[ list_rois_harmonized ].mean(axis=1)
 
     df_out.to_csv(args.out_csv, index=False)
