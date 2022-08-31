@@ -22,20 +22,20 @@ def main(args):
     nrows, ncols = [5, 2]
     fg = plt.figure(figsize=(10*nrows,10*ncols))
 
-    for i in range(10):
+    for i in range(len(params)):
         feature = params[i]
         file = args.in_dir + feature + '.csv'
         df = pd.read_csv(file)
 
 
         ## conditions on data for analysis 
-        df = df.loc[ (df['Age'] >= 65) & (df['Age'] <= 90) ]
+        # df = df.loc[(df['Age'] >= 45) & (df['Age'] <= 99) ]
         df = df.loc[df.ResearchGroup =='CN']
         df = df.loc[df.TR.isin(args.TR)] ## changes in arguments
 
 
         df["Mean_Brain"] = df[[args.cols[0], args.cols[1]]].mean(axis=1)
-        df, _ = clean_dataframe(df, 'Mean_Brain')
+        df, _ = remove_outlier(df, 'Mean_Brain')
 
         plt.subplot(2,5,i+1)
         idx_color = 0
@@ -50,6 +50,8 @@ def main(args):
                 df, _ = remove_outlier(df, col)
                 miny = df[ args.cols].min().min()
                 maxy = df[ args.cols].max().max()
+
+                minx, maxx = df['Age'].min(), df['Age'].max()
                 
                 df = df.sort_values('Age')
                 
@@ -64,7 +66,7 @@ def main(args):
                 sns.scatterplot(x='Age', y=col, data=df, color=pal[idx_color], alpha=0.4, s=250)
 
                 range_val = abs(abs(maxy) - abs(miny))
-                plt.axis([64, 91, miny -0.25*range_val, maxy + 0.1*range_val ])
+                plt.axis([minx-1, maxx+1, miny -0.25*range_val, maxy + 0.1*range_val ])
                 
                 # regression line
                 col_name =col.split('_')[0]
