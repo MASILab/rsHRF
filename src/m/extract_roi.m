@@ -1,4 +1,4 @@
-function extract_rois(INPUT_DIR, OUT_DIR, PARAM, TEMPLATE)
+function extract_roi(INPUT_DIR, OUT_DIR, PARAM, TEMPLATE)
 
 
 list_dir = dir([INPUT_DIR '*/ants_func2stand/func2stand_' PARAM '.nii'])
@@ -6,12 +6,11 @@ list_dir = dir([INPUT_DIR '*/ants_func2stand/func2stand_' PARAM '.nii'])
 labels = load_nii(TEMPLATE);
 
 rois_id = unique(labels.img);
-y = zeros(757,length(rois_id)-1);
-y = zeros(5,length(rois_id)-1);
-
+y = zeros(length(list_dir),length(rois_id)-1);
     
 for j=1:length(list_dir)
-    nii =load_nii([list_dir(j).folder '/func2stand_' param '.nii']);
+    j
+    nii =load_nii([list_dir(j).folder '/func2stand_' PARAM '.nii']);
 
     for roi=1:length(rois_id) -1
         list_idx = find(labels.img == roi);
@@ -36,7 +35,7 @@ for j=1:length(list_dir)
 end
 
 final_mat = [ mat_out, y];
-filename= [ OUT_DIR '/' param '.csv'];
+filename= [ OUT_DIR '/' PARAM '.csv'];
 T = array2table(final_mat);
 
 names = ["Experiment", string(rois_id(2:end))'];
