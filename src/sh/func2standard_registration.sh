@@ -25,9 +25,6 @@ while [ "$1" != "" ]; do
     shift
 done
 
-folder='/nfs2/rsHRF/ADNI/'
-atlas='/home/local/VANDERBILT/dolel/Documents/rsHRF_project/atlases/MNI/mni_icbm152_nlin_asym_09c/mni_icbm152_t1_tal_nlin_asym_09c.nii'
-
 i=0
 for subject in $folder* ; do
   if [ -d "$subject" ]; then
