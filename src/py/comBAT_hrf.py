@@ -95,11 +95,13 @@ def main(args):
     if 'TR' in args.effects:
         df = df.loc[ df['TR'].isin(TR_to_keep)]
         for tr_i in TR_to_keep:
+            print('TR added', tr_i)
 
             df_1 = df.loc[ df['TR'] == tr_i]
             df_1.insert(5, "Mean_Brain",df_1[list_rois].mean(axis=1), True)
 
-            df_1, _ = clean_dataframe(df_1, 'Mean_Brain')
+
+            df_1, _ = remove_outlier(df_1, 'Mean_Brain')
             df_1 = df_1.drop(columns=['Mean_Brain'])
             df_clean = pd.concat([df_clean, df_1])
 
