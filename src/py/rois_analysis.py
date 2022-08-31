@@ -11,13 +11,13 @@ from patsy import dmatrix
 import statsmodels.api as sm 
 
 from utils import *
-
+import os
 
 
 def set_axis(fig, ax, params, text, font=20):
-
-    plt.text(24,1, "Legend: \n", fontsize=font)
-    plt.text(24,10, text, fontsize=font-5)
+    if text != '':
+        plt.text(24,1, "Legend: \n", fontsize=font)
+        plt.text(24,10, text, fontsize=font-2)
 
 
     nb_features = len(params)
@@ -175,24 +175,28 @@ def main(args):
 
     if type_analysis == 'symmetry':
 
-        fig = plt.figure(figsize=(60,40))
-        ax = sns.heatmap(p_val_arr, cmap = 'Greens_r', square=True, annot=True, annot_kws={"fontsize":font-8}, cbar_kws={"shrink":0.7})
+        fig = plt.figure(figsize=(20,10))
+
+        ax = sns.heatmap(p_val_arr, cmap = 'Greens_r', square=True, annot=True, annot_kws={"fontsize":font-5}, cbar_kws={"shrink":0.5})
         ax = sns.heatmap(p_val_arr, mask=p_val_arr < 0.005, cmap='Oranges', vmin=-0.50, square=True, annot=False, cbar=False)
         set_axis(fig, ax, params,legend, font=font)
+        outfile = os.path.join(args.out, 'pval.png')
 
+        plt.tight_layout()
+        fig.savefig(outfile)
 
-        fig = plt.figure(figsize=(60,40))
+        fig = plt.figure(figsize=(20,10))
+
         xmin = np.min(cohen_d_arr)
         xmax = np.max(cohen_d_arr)
         t = max( abs(xmin), abs(xmax))
 
-
         cmap = sns.diverging_palette(240, 10, n=9)     
-        ax = sns.heatmap(cohen_d_arr, cmap = cmap, vmin = -t, vmax= t, square=True, annot=True, annot_kws={"fontsize":font-5}, cbar_kws={"shrink":0.7})
+        ax = sns.heatmap(cohen_d_arr, cmap = cmap, vmin = -t, vmax= t, square=True, annot=True, annot_kws={"fontsize":font-5}, cbar_kws={"shrink":0.5})
         set_axis(fig, ax, params,legend, font=font)
-
-        plt.show()
-
+        outfile = os.path.join(args.out, 'cohen.png')
+        plt.tight_layout()
+        fig.savefig(outfile)
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser(description='Compute a metric for all HRF features and save is a png')
