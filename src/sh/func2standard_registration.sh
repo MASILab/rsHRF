@@ -1,54 +1,98 @@
 #!/bin/bash
 
-folder='/home/local/VANDERBILT/dolel/Documents/rsHRF_project/ADNI_23/'
-atlas='/home/local/VANDERBILT/dolel/Documents/rsHRF_project/atlases/mni_icbm152_nlin_asym_09c/mni_icbm152_t1_tal_nlin_asym_09c.nii'
+Help()
+{
+# Display Help
+echo "Help"
+echo "Register data into MNI space"
+echo
+echo "Syntax: apply_py_parameters.sh [--options]"
+echo "options:"
+echo "--folder         Input directory containing features csv files "
+echo "--atlas          MNI template"
+}
 
-params="Olrm_Height DipHeight TroughHeight PeakIntegral DipIntegral TroughIntegral Olrm_Time2peak Time2dip Time2trough Olrm_FWHM"
+while [ "$1" != "" ]; do
+    case $1 in
+        --folder )  shift
+            folder=$1;;
+        --atlas )  shift
+            atlas=$1;;
+        -h | --help )
+            Help
+            exit;
+    esac
+    shift
+done
+
+folder='/nfs2/rsHRF/ADNI/'
+atlas='/home/local/VANDERBILT/dolel/Documents/rsHRF_project/atlases/MNI/mni_icbm152_nlin_asym_09c/mni_icbm152_t1_tal_nlin_asym_09c.nii'
 
 i=0
-cd $folder
-for subject in * ; do
- if [ -d "$subject" ]; then
-  subject_dir="${folder}${subject}/"
-  cd $subject_dir
-   for exp in * ]; do
-    if [ -d  "${exp}/func2standard" ] ; then
-     if [[ "$i" -ge 700 ]]; then
-      exp_dir="${subject_dir}${exp}/"
+for subject in $folder* ; do
+  if [ -d "$subject" ]; then
+    for exp in "$subject"/* ; do
+      if [ -d "$exp" ]; then
+          test=$exp"/Deconv/Deconv_Detrend_4DVolume_DipHeight.nii"
+          if [ -f  "$test" ] ; then
+            if [ "$i" -ge 1001 ]; then
+              echo $i "-----${subject}------"
 
-      cd $exp_dir      
-      # input files
-      func_dir='rsfmri'
-      T1="anat/T1_copy.nii.gz"
+              func=$subject"/Deconv/Deconv_Detrend_4DVolume_Olrm_Height.nii"
 
-      # directories
-      dir_func2struct="func2struct_canonical/"
-      dir_func2stand="func2stand_canonical/"
- 
-      # echo $pwd
-      #### on mean brain
-      # epi_reg --epi=$func --t1=$T1 --t1brain=$T1_brain --out=$func2struct_param
-      
-      echo $i  "-----${subject_dir}${exp}------"
-      if [[ ! -f $dir_func2stand"func2stand_DipHeight.nii.gz" ]]
-      then
-      #   convertwarp -r func2struct/mean_func2struct.nii.gz   -m func2struct"/mean_func2struct.mat" -o func2struct"/mean_func2struct_warp.nii.gz"
-      # fi
-      
-      # for val in $params; do
-      #     func='rsfmri/Deconv_Canonical_Detrend_4DVolume_'$val'.nii'
-      #     applywarp -i $func  -r func2struct"/mean_func2struct.nii.gz"  -w func2struct"/mean_func2struct_warp.nii.gz" --interp=spline -o  $dir_func2struct"func2struct_"$val.nii.gz
-      # done
-        python3 /home/local/VANDERBILT/dolel/Documents/rsHRF/src/py/registration_func2_stand_ants.py --T1 ${T1} --rsfmri ${dir_func2struct} --atlas ${atlas} --func2stand ${dir_func2stand}
+              T1=$subject"/anat/T1.nii.gz"
+              T1_brain=$subject"/anat/brain_masked.nii.gz"
+              func2struct=$subject"/func2struct/func2struct_Height.nii"
 
+              # directories
+              dir_func2struct=$subject"/func2struct/"
+              dir_func2stand=$subject"/func2stand/"
+
+              if [[ ! -f $dir_func2stand"func2stand_Time2dip.nii" ]]
+              then
+                echo "epi_reg_Height"
+                mkdir $dir_func2struct
+                epi_reg --epi=$func --t1=$T1 --t1brain=$T1_brain --out=$func2struct
+              fi
+
+              if [[ ! -f $dir_func2struct"func2struct_Height_warp.nii.gz" ]]
+              then
+                echo "convertwarp_Height"
+                convertwarp -r $dir_func2struct"func2struct_Height.nii.gz"   -m $dir_func2struct"func2struct_Height.mat" -o $dir_func2struct"func2struct_Height_warp.nii.gz"
+              fi
+
+              params="Olrm_Time2peak Olrm_FWHM"
+              for val in $params; do
+                  func=${subject}'/Deconv/Deconv_Detrend_4DVolume_'$val'.nii'
+                  if [[ ! -f $dir_func2struct"func2struct_"$val".nii.gz" ]]
+                  then
+                    echo "func2struct_olrm"
+                    applywarp -i $func  -r $dir_func2struct"func2struct_Height.nii.gz"  -w $dir_func2struct"func2struct_Height_warp.nii.gz" --interp=spline -o  $dir_func2struct"func2struct_"$val.nii.gz
+                  fi
+              done
+
+              params="DipHeight TroughHeight PeakIntegral DipIntegral TroughIntegral Time2dip Time2trough"
+              for val in $params; do
+                  func=${subject}'/Deconv/'$val'.nii'
+                  if [[ ! -f $dir_func2struct"func2struct_"$val".nii.gz" ]]
+                  then
+                    echo "func2struct_dipHeight"
+                    applywarp -i $func  -r $dir_func2struct"func2struct_Height.nii.gz"  -w $dir_func2struct"func2struct_Height_warp.nii.gz" --interp=spline -o  $dir_func2struct"func2struct_"$val.nii.gz
+                  fi
+              done
+              
+              ### struct to stand
+              if [[ ! -f $dir_func2stand"func2stand_DipHeight.nii.gz" ]]
+              then
+                echo "struct2stand"
+                mkdir $dir_func2stand
+                python3 /home/local/VANDERBILT/dolel/Documents/rsHRF/src/py/registration_func2_stand_ants.py --rsfmri ${exp} --atlas ${atlas}
+              fi
+
+            fi
+            i=$((i+1))
+          fi
       fi
-
-      
-      cd ..
-     fi
-     i=$((i+1))
-    fi
-   done
-  cd ..
+    done
   fi
 done
