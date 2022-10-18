@@ -8,7 +8,7 @@ central = Interface(server='https://xnat.vanderbilt.edu/xnat/')
 # select project
 project = central.select.project('ADNI_23')
 
-out = '/home/local/VANDERBILT/dolel/Documents/rsHRF_project/ADNI_23/'
+out = '/home/local/VANDERBILT/mazumdt/Documents/rsHRF_project/ADNI_23/'
 
 #  loop on subject, experiment,and assessor
 list_subjects = project.subjects().get()
